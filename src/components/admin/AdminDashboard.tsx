@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   X,
   Palette,
@@ -24,7 +24,7 @@ import {
 import { useTheme } from '../../context/ThemeContext';
 import { useData } from '../../context/DataContext';
 import { ImageUploader } from '../ui/ImageUploader';
-import { SUPABASE_MIGRATION_SQL } from '../../lib/supabase';
+import { getSupabase, SUPABASE_MIGRATION_SQL } from '../../lib/supabase';
 import { PortfolioProject, PerfumeProduct, ServiceItem, HeroSettings, InquirySubmission } from '../../types/data';
 
 interface AdminDashboardProps {
@@ -83,13 +83,98 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
   const [supaTestLoading, setSupaTestLoading] = useState(false);
   const [supaTestResult, setSupaTestResult] = useState<{ success: boolean; message: string } | null>(null);
   const [copiedSql, setCopiedSql] = useState(false);
+  // Admin access is granted only after Supabase Auth verifies an account.
+  const [adminEmail, setAdminEmail] = useState('');
+  const [adminPassword, setAdminPassword] = useState('');
+  const [adminAuthenticated, setAdminAuthenticated] = useState(false);
+  const [adminAuthLoading, setAdminAuthLoading] = useState(false);
+  const [adminAuthError, setAdminAuthError] = useState('');
+
+  useEffect(() => {
+    if (!isOpen) return;
+    let cancelled = false;
+    const supabase = getSupabase();
+    setAdminAuthenticated(false);
+    setAdminAuthError('');
+    if (!supabase) return;
+    supabase.auth.getSession().then(({ data, error }) => {
+      if (!cancelled && !error && data.session?.user) setAdminAuthenticated(true);
+    });
+    return () => { cancelled = true; };
+  }, [isOpen]);
+
+  const handleAdminLogin = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setAdminAuthError('');
+    const supabase = getSupabase();
+    if (!supabase) {
+      setAdminAuthError('Supabase is not configured in this browser. Configure the Supabase project first, then sign in.');
+      return;
+    }
+    setAdminAuthLoading(true);
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: adminEmail.trim(),
+        password: adminPassword,
+      });
+      if (error || !data.user) {
+        setAdminAuthError(error?.message || 'Sign-in failed. Check your email and password.');
+        return;
+      }
+      setAdminAuthenticated(true);
+      setAdminPassword('');
+    } catch {
+      setAdminAuthError('Unable to sign in. Check your connection and Supabase Auth settings.');
+    } finally {
+      setAdminAuthLoading(false);
+    }
+  };
+
+  const handleAdminLogout = async () => {
+    const supabase = getSupabase();
+    if (supabase) await supabase.auth.signOut();
+    setAdminAuthenticated(false);
+    setAdminEmail('');
+    setAdminPassword('');
+    setAdminAuthError('');
+  };
+
 
   // New portfolio/perfume modal states
   const [editingService, setEditingService] = useState<ServiceItem | null>(null);
   const [editingProject, setEditingProject] = useState<PortfolioProject | null>(null);
   const [editingPerfume, setEditingPerfume] = useState<PerfumeProduct | null>(null);
 
+
   if (!isOpen) return null;
+
+  if (!adminAuthenticated) {
+    return (
+      <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md">
+        <form onSubmit={handleAdminLogin} className="w-full max-w-md rounded-2xl border border-[var(--color-border)] bg-[var(--surface-card)] p-6 sm:p-8 shadow-2xl text-[var(--text-primary)]">
+          <div className="flex items-center gap-3 mb-6">
+            <span className="w-11 h-11 rounded-xl bg-[var(--color-primary)] text-white flex items-center justify-center font-bold">AV</span>
+            <div>
+              <h2 className="text-lg font-bold font-serif">Director Portal</h2>
+              <p className="text-xs text-[var(--text-secondary)]">AMBITIOUS VENDOR · Secure sign in</p>
+            </div>
+          </div>
+          <p className="text-sm text-[var(--text-secondary)] mb-6">Sign in with an authorized Supabase account to access website administration.</p>
+          <label className="block text-xs font-semibold mb-2" htmlFor="admin-auth-email">Admin email</label>
+          <input id="admin-auth-email" type="email" autoComplete="username" required value={adminEmail} onChange={e => setAdminEmail(e.target.value)} className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--bg-main)] px-4 py-3 mb-4 outline-none focus:ring-2 focus:ring-[var(--color-primary)]" placeholder="you@example.com" />
+          <label className="block text-xs font-semibold mb-2" htmlFor="admin-auth-password">Password</label>
+          <input id="admin-auth-password" type="password" autoComplete="current-password" required value={adminPassword} onChange={e => setAdminPassword(e.target.value)} className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--bg-main)] px-4 py-3 mb-4 outline-none focus:ring-2 focus:ring-[var(--color-primary)]" placeholder="Enter your password" />
+          {adminAuthError && <p role="alert" className="mb-4 rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-600">{adminAuthError}</p>}
+          <div className="flex gap-3">
+            <button type="button" onClick={onClose} className="flex-1 rounded-xl border border-[var(--color-border)] px-4 py-3 text-sm font-semibold hover:bg-[var(--surface-soft)]">Cancel</button>
+            <button type="submit" disabled={adminAuthLoading} className="flex-1 rounded-xl bg-[var(--color-primary)] px-4 py-3 text-sm font-semibold text-white disabled:opacity-60">{adminAuthLoading ? 'Signing in…' : 'Sign in securely'}</button>
+          </div>
+          <p className="mt-5 text-[11px] leading-relaxed text-[var(--text-secondary)]">This uses Supabase Authentication. A password stored in a regular database table will not work unless a matching Supabase Auth user exists in the connected project.</p>
+        </form>
+      </div>
+    );
+  }
+
 
   const notify = (msg: string) => {
     setSaveNotification(msg);
@@ -178,6 +263,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
           </div>
 
           <div className="flex items-center gap-3">
+            <button onClick={handleAdminLogout} className="px-3 py-2 rounded-lg border border-[var(--color-border)] text-xs font-semibold hover:bg-[var(--surface-card)]" title="Sign out of the admin portal">Sign out</button>
+
             {saveNotification && (
               <span className="px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-medium flex items-center gap-1.5 animate-fade-in">
                 <Check className="w-3.5 h-3.5" />
