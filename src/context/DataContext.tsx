@@ -132,124 +132,33 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [siteSettings.siteTitle, siteSettings.tagline]);
 
-  // Load from Supabase if connected
+  // Load the current JSON-based Supabase schema.
   const refreshData = useCallback(async () => {
     const supabase = getSupabase();
     if (!supabase) return;
-
     setIsLoading(true);
     try {
-      // 1. Fetch site settings
-      const { data: siteData, error: siteErr } = await supabase.from('site_settings').select('*').limit(1).single();
-      if (!siteErr && siteData) {
-        setSiteSettings(prev => ({
-          ...prev,
-          siteTitle: siteData.site_title || prev.siteTitle,
-          tagline: siteData.tagline || prev.tagline,
-          metaDescription: siteData.meta_description || prev.metaDescription,
-          logoUrl: siteData.logo_url || prev.logoUrl,
-          faviconUrl: siteData.favicon_url || prev.faviconUrl,
-          email: siteData.email || prev.email,
-          phone: siteData.phone || prev.phone,
-          whatsapp: siteData.whatsapp || prev.whatsapp,
-          address: siteData.address || prev.address,
-          marqueeSpeedSeconds: siteData.marquee_speed_seconds || prev.marqueeSpeedSeconds,
-        }));
-      }
-
-      // 2. Fetch services
-      const { data: servicesData, error: srvErr } = await supabase.from('services').select('*').order('sort_order', { ascending: true });
-      if (!srvErr && servicesData && servicesData.length > 0) {
-        setServices(servicesData.map(s => ({
-          id: s.id,
-          title: s.title,
-          category: s.category,
-          tagline: s.tagline || '',
-          description: s.description,
-          deliverables: Array.isArray(s.deliverables) ? s.deliverables : [],
-          imageUrl: s.image_url,
-          ctaText: s.cta_text,
-          sortOrder: s.sort_order || 0,
-        })));
-      }
-
-      // 3. Fetch portfolio
-      const { data: portData, error: portErr } = await supabase.from('portfolio_projects').select('*').order('created_at', { ascending: false });
-      if (!portErr && portData && portData.length > 0) {
-        setPortfolio(portData.map(p => ({
-          id: p.id,
-          title: p.title,
-          category: p.category,
-          client: p.client,
-          year: p.year,
-          summary: p.summary,
-          outcome: p.outcome,
-          imageUrl: p.image_url,
-          tags: Array.isArray(p.tags) ? p.tags : [],
-          projectUrl: p.project_url,
-          featured: p.featured,
-        })));
-      }
-
-      // 4. Fetch perfumes
-      const { data: perfData, error: perfErr } = await supabase.from('perfume_products').select('*');
-      if (!perfErr && perfData && perfData.length > 0) {
-        setPerfumes(perfData.map(pr => ({
-          id: pr.id,
-          name: pr.name,
-          subtitle: pr.subtitle,
-          volume: pr.volume,
-          priceNaira: Number(pr.price_naira),
-          description: pr.description,
-          notes: pr.notes || { top: '', heart: '', base: '' },
-          imageUrl: pr.image_url,
-          inStock: pr.in_stock,
-          featured: pr.featured,
-        })));
-      }
-
-      // 5. Fetch founder profile
-      const { data: founderData, error: fndErr } = await supabase.from('founder_profile').select('*').limit(1).single();
-      if (!fndErr && founderData) {
-        setFounder({
-          name: founderData.name,
-          title: founderData.title,
-          brandRole: founderData.brand_role,
-          bio: founderData.bio,
-          statement: founderData.statement,
-          portraitUrl: founderData.portrait_url,
-          email: founderData.email,
-          phone: founderData.phone,
-          whatsapp: founderData.whatsapp,
-          instagram: founderData.instagram,
-          linkedin: founderData.linkedin,
-          experienceYears: founderData.experience_years,
-        });
-      }
-
-      // 6. Fetch inquiries
-      const { data: inqData, error: inqErr } = await supabase.from('inquiries').select('*').order('created_at', { ascending: false });
-      if (!inqErr && inqData) {
-        setInquiries(inqData.map(i => ({
-          id: i.id,
-          name: i.name,
-          email: i.email,
-          phone: i.phone,
-          serviceCategory: i.service_category,
-          timeline: i.timeline,
-          budgetRange: i.budget_range,
-          message: i.message,
-          status: i.status || 'new',
-          createdAt: i.created_at,
-        })));
-      }
-
-      setSupabaseConfig(prev => ({ ...prev, connected: true, lastChecked: new Date().toLocaleTimeString() }));
-    } catch (err) {
-      console.warn('Supabase fetch error, using local data:', err);
-    } finally {
-      setIsLoading(false);
-    }
+      const [siteRes, heroRes, marqueeRes, aboutRes, servicesRes, portfolioRes, perfumesRes, inquiriesRes] = await Promise.all([
+        supabase.from('site_settings').select('data').eq('key','current').maybeSingle(),
+        supabase.from('hero_settings').select('data').eq('key','current').maybeSingle(),
+        supabase.from('marquee_settings').select('data').eq('key','current').maybeSingle(),
+        supabase.from('about_content').select('data').eq('key','current').maybeSingle(),
+        supabase.from('services').select('id,data,sort_order,published').order('sort_order',{ascending:true}),
+        supabase.from('portfolio_projects').select('id,data,sort_order,published').order('sort_order',{ascending:true}),
+        supabase.from('perfume_products').select('id,data,sort_order,published').order('sort_order',{ascending:true}),
+        supabase.from('contact_submissions').select('*').order('created_at',{ascending:false}),
+      ]);
+      if(siteRes.data?.data){const d=siteRes.data.data;setSiteSettings(p=>({...p,siteTitle:d.siteName||d.logoText||p.siteTitle,tagline:d.tagline||p.tagline,metaDescription:d.seoDescription||d.metaDescription||p.metaDescription,logoUrl:d.logoUrl||p.logoUrl,faviconUrl:d.faviconUrl||p.faviconUrl,email:d.email||p.email,phone:d.phone||p.phone,whatsapp:d.whatsapp||p.whatsapp,address:d.address||p.address,marqueeSpeedSeconds:d.marqueeSpeedSeconds||p.marqueeSpeedSeconds}));}
+      if(heroRes.data?.data){const d=heroRes.data.data;setHeroSettings(p=>({...p,...d,headline:d.headline||p.headline,subheading:d.subheading||p.subheading,bgImage:d.bgImage||p.bgImage,duration:d.duration||p.duration}));}
+      if(marqueeRes.data?.data){const d=marqueeRes.data.data;setSiteSettings(p=>({...p,marqueeSpeedSeconds:d.speedSeconds||p.marqueeSpeedSeconds}));}
+      if(aboutRes.data?.data){const d=aboutRes.data.data;setFounder(p=>({...p,name:d.name||p.name,title:d.ceoTitle||d.title||p.title,brandRole:d.ceoName||d.brandRole||p.brandRole,bio:d.brandIntro||d.bio||p.bio,statement:d.headline||d.statement||p.statement,portraitUrl:d.ceoImage||d.portraitUrl||p.portraitUrl,email:d.email||p.email,phone:d.phone||p.phone,whatsapp:d.whatsapp||p.whatsapp,instagram:d.instagram||p.instagram,linkedin:d.linkedin||p.linkedin}));}
+      if(servicesRes.data?.length)setServices(servicesRes.data.filter((r:any)=>r.published!==false).map((r:any)=>{const d=r.data||{};return{id:r.id,title:d.title||'',category:d.category||'',tagline:d.tagline||d.shortDescription||'',description:d.fullDescription||d.description||'',deliverables:Array.isArray(d.deliverables)?d.deliverables:[],imageUrl:d.image||d.imageUrl||'',ctaText:d.ctaText||'',sortOrder:r.sort_order??d.order??0};}));
+      if(portfolioRes.data?.length)setPortfolio(portfolioRes.data.filter((r:any)=>r.published!==false).map((r:any)=>{const d=r.data||{};return{id:r.id,title:d.title||'',category:d.category||'Graphic Design',client:d.client||'',year:String(d.year||''),summary:d.description||d.summary||'',outcome:d.outcome||'',imageUrl:d.image||d.imageUrl||'',tags:Array.isArray(d.tags)?d.tags:[],projectUrl:d.projectUrl||d.project_url||'',featured:Boolean(d.featured)};}));
+      if(perfumesRes.data?.length)setPerfumes(perfumesRes.data.filter((r:any)=>r.published!==false).map((r:any)=>{const d=r.data||{};const price=Number(String(d.price||d.priceNaira||'0').replace(/[^0-9.]/g,''));const notes=typeof d.notes==='string'?{top:d.notes,heart:'',base:''}:(d.notes||{top:'',heart:'',base:''});return{id:r.id,name:d.name||'',subtitle:d.tagline||d.subtitle||'',volume:d.volume||'',priceNaira:Number.isFinite(price)?price:0,description:d.description||'',notes,imageUrl:d.image||d.imageUrl||'',inStock:(d.status||'Available')!=='Out of Stock',featured:Boolean(d.featured)};}));
+      if(inquiriesRes.data)setInquiries(inquiriesRes.data.map((i:any)=>({id:i.id,name:i.full_name||'',email:i.email||'',phone:i.phone||'',serviceCategory:i.service||'',timeline:'',budgetRange:i.budget||'',message:i.message||'',status:i.status==='In Progress'?'in progress':i.status==='Resolved'?'resolved':'new',createdAt:i.created_at})));
+      setSupabaseConfig(p=>({...p,connected:true,lastChecked:new Date().toLocaleTimeString(),error:undefined}));
+    } catch(err) { console.warn('Supabase fetch error:',err); setSupabaseConfig(p=>({...p,connected:false,error:err instanceof Error?err.message:'Could not load Supabase data'})); }
+    finally { setIsLoading(false); }
   }, []);
 
   // Initial check
@@ -270,123 +179,40 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Persist locally
   const saveServices = async (newServices: ServiceItem[]) => {
-    setServices(newServices);
-    localStorage.setItem(STORAGE_KEYS.SERVICES, JSON.stringify(newServices));
-
-    const supabase = getSupabase();
-    if (supabase) {
-      for (const s of newServices) {
-        await supabase.from('services').upsert({
-          id: s.id,
-          title: s.title,
-          category: s.category,
-          tagline: s.tagline,
-          description: s.description,
-          deliverables: s.deliverables,
-          image_url: s.imageUrl,
-          cta_text: s.ctaText,
-          sort_order: s.sortOrder,
-        });
-      }
-    }
+    setServices(newServices); localStorage.setItem(STORAGE_KEYS.SERVICES,JSON.stringify(newServices));
+    const supabase=getSupabase(); if(!supabase)return;
+    for(const s of newServices){const {error}=await supabase.from('services').upsert({id:s.id,data:{id:s.id,title:s.title,category:s.category,tagline:s.tagline,shortDescription:s.tagline,fullDescription:s.description,description:s.description,deliverables:s.deliverables,image:s.imageUrl,ctaText:s.ctaText,order:s.sortOrder,published:true},sort_order:s.sortOrder,published:true});if(error)throw error;}
   };
 
   const savePortfolio = async (newPortfolio: PortfolioProject[]) => {
-    setPortfolio(newPortfolio);
-    localStorage.setItem(STORAGE_KEYS.PORTFOLIO, JSON.stringify(newPortfolio));
-
-    const supabase = getSupabase();
-    if (supabase) {
-      for (const p of newPortfolio) {
-        await supabase.from('portfolio_projects').upsert({
-          id: p.id,
-          title: p.title,
-          category: p.category,
-          client: p.client,
-          year: p.year,
-          summary: p.summary,
-          outcome: p.outcome,
-          image_url: p.imageUrl,
-          tags: p.tags,
-          project_url: p.projectUrl,
-          featured: p.featured,
-        });
-      }
-    }
+    setPortfolio(newPortfolio); localStorage.setItem(STORAGE_KEYS.PORTFOLIO,JSON.stringify(newPortfolio));
+    const supabase=getSupabase(); if(!supabase)return;
+    for(const p of newPortfolio){const {error}=await supabase.from('portfolio_projects').upsert({id:p.id,data:{id:p.id,title:p.title,category:p.category,client:p.client,year:p.year,description:p.summary,summary:p.summary,outcome:p.outcome,image:p.imageUrl,tags:p.tags,projectUrl:p.projectUrl,featured:p.featured,order:newPortfolio.indexOf(p),published:true},sort_order:newPortfolio.indexOf(p),published:true});if(error)throw error;}
   };
 
   const savePerfumes = async (newPerfumes: PerfumeProduct[]) => {
-    setPerfumes(newPerfumes);
-    localStorage.setItem(STORAGE_KEYS.PERFUMES, JSON.stringify(newPerfumes));
-
-    const supabase = getSupabase();
-    if (supabase) {
-      for (const p of newPerfumes) {
-        await supabase.from('perfume_products').upsert({
-          id: p.id,
-          name: p.name,
-          subtitle: p.subtitle,
-          volume: p.volume,
-          price_naira: p.priceNaira,
-          description: p.description,
-          notes: p.notes,
-          image_url: p.imageUrl,
-          in_stock: p.inStock,
-          featured: p.featured,
-        });
-      }
-    }
+    setPerfumes(newPerfumes); localStorage.setItem(STORAGE_KEYS.PERFUMES,JSON.stringify(newPerfumes));
+    const supabase=getSupabase(); if(!supabase)return;
+    for(const p of newPerfumes){const {error}=await supabase.from('perfume_products').upsert({id:p.id,data:{id:p.id,name:p.name,tagline:p.subtitle,subtitle:p.subtitle,volume:p.volume,price:String(p.priceNaira),priceNaira:p.priceNaira,description:p.description,notes:[p.notes.top,p.notes.heart,p.notes.base].filter(Boolean).join(' · '),image:p.imageUrl,status:p.inStock?'Available':'Out of Stock',featured:p.featured,order:newPerfumes.indexOf(p),published:true},sort_order:newPerfumes.indexOf(p),published:true});if(error)throw error;}
   };
 
   const saveFounder = async (newFounder: FounderProfile) => {
-    setFounder(newFounder);
-    localStorage.setItem(STORAGE_KEYS.FOUNDER, JSON.stringify(newFounder));
-
-    const supabase = getSupabase();
-    if (supabase) {
-      await supabase.from('founder_profile').upsert({
-        id: 'founder',
-        name: newFounder.name,
-        title: newFounder.title,
-        brand_role: newFounder.brandRole,
-        bio: newFounder.bio,
-        statement: newFounder.statement,
-        portrait_url: newFounder.portraitUrl,
-        email: newFounder.email,
-        phone: newFounder.phone,
-        whatsapp: newFounder.whatsapp,
-        instagram: newFounder.instagram,
-        linkedin: newFounder.linkedin,
-        experience_years: newFounder.experienceYears,
-      });
-    }
+    setFounder(newFounder); localStorage.setItem(STORAGE_KEYS.FOUNDER,JSON.stringify(newFounder));
+    const supabase=getSupabase(); if(!supabase)return;
+    const data={ceoName:newFounder.brandRole,ceoTitle:newFounder.title,brandRole:newFounder.brandRole,bio:newFounder.bio,brandIntro:newFounder.bio,headline:newFounder.statement,statement:newFounder.statement,ceoImage:newFounder.portraitUrl,portraitUrl:newFounder.portraitUrl,name:newFounder.name,email:newFounder.email,phone:newFounder.phone,whatsapp:newFounder.whatsapp,instagram:newFounder.instagram,linkedin:newFounder.linkedin};
+    const {error}=await supabase.from('about_content').upsert({key:'current',data,updated_at:new Date().toISOString()}); if(error)throw error;
   };
 
   const saveHeroSettings = async (newHero: HeroSettings) => {
-    setHeroSettings(newHero);
-    localStorage.setItem(STORAGE_KEYS.HERO, JSON.stringify(newHero));
+    setHeroSettings(newHero); localStorage.setItem(STORAGE_KEYS.HERO,JSON.stringify(newHero));
+    const supabase=getSupabase(); if(!supabase)return;
+    const {error}=await supabase.from('hero_settings').upsert({key:'current',data:{...newHero,bgImage:(newHero as any).bgImage||(newHero as any).backgroundImage},updated_at:new Date().toISOString()});if(error)throw error;
   };
 
   const saveSiteSettings = async (newSite: SiteSettings) => {
-    setSiteSettings(newSite);
-    localStorage.setItem(STORAGE_KEYS.SITE, JSON.stringify(newSite));
-
-    const supabase = getSupabase();
-    if (supabase) {
-      await supabase.from('site_settings').upsert({
-        id: 'default',
-        site_title: newSite.siteTitle,
-        tagline: newSite.tagline,
-        meta_description: newSite.metaDescription,
-        logo_url: newSite.logoUrl,
-        favicon_url: newSite.faviconUrl,
-        email: newSite.email,
-        phone: newSite.phone,
-        whatsapp: newSite.whatsapp,
-        address: newSite.address,
-        marquee_speed_seconds: newSite.marqueeSpeedSeconds,
-      });
-    }
+    setSiteSettings(newSite); localStorage.setItem(STORAGE_KEYS.SITE,JSON.stringify(newSite));
+    const supabase=getSupabase(); if(!supabase)return;
+    const {error}=await supabase.from('site_settings').upsert({key:'current',data:{siteName:newSite.siteTitle,logoText:newSite.siteTitle,tagline:newSite.tagline,seoDescription:newSite.metaDescription,logoUrl:newSite.logoUrl,faviconUrl:newSite.faviconUrl,email:newSite.email,phone:newSite.phone,whatsapp:newSite.whatsapp,address:newSite.address,marqueeSpeedSeconds:newSite.marqueeSpeedSeconds},updated_at:new Date().toISOString()});if(error)throw error;
   };
 
   const submitInquiry = async (
@@ -406,47 +232,24 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const supabase = getSupabase();
     if (supabase) {
-      try {
-        await supabase.from('inquiries').insert({
-          id: newInquiry.id,
-          name: newInquiry.name,
-          email: newInquiry.email,
-          phone: newInquiry.phone,
-          service_category: newInquiry.serviceCategory,
-          timeline: newInquiry.timeline,
-          budget_range: newInquiry.budgetRange,
-          message: newInquiry.message,
-          status: newInquiry.status,
-          created_at: newInquiry.createdAt,
-        });
-      } catch (err) {
-        console.warn('Inquiry remote sync error:', err);
-      }
+      const {error}=await supabase.from('contact_submissions').insert({
+        id:newInquiry.id,full_name:newInquiry.name,email:newInquiry.email,phone:newInquiry.phone,
+        service:newInquiry.serviceCategory,budget:newInquiry.budgetRange,message:newInquiry.message,status:'New',created_at:newInquiry.createdAt
+      });
+      if(error){console.warn('Inquiry remote sync error:',error.message);return {success:false,id};}
     }
 
     return { success: true, id };
   };
 
   const updateInquiryStatus = async (id: string, status: InquirySubmission['status']) => {
-    const updated = inquiries.map(i => (i.id === id ? { ...i, status } : i));
-    setInquiries(updated);
-    localStorage.setItem(STORAGE_KEYS.INQUIRIES, JSON.stringify(updated));
-
-    const supabase = getSupabase();
-    if (supabase) {
-      await supabase.from('inquiries').update({ status }).eq('id', id);
-    }
+    const updated=inquiries.map(i=>i.id===id?{...i,status}:i);setInquiries(updated);localStorage.setItem(STORAGE_KEYS.INQUIRIES,JSON.stringify(updated));
+    const supabase=getSupabase();if(supabase){const dbStatus=status==='resolved'?'Resolved':status==='in progress'?'In Progress':'New';const {error}=await supabase.from('contact_submissions').update({status:dbStatus}).eq('id',id);if(error)throw error;}
   };
 
   const deleteInquiry = async (id: string) => {
-    const updated = inquiries.filter(i => i.id !== id);
-    setInquiries(updated);
-    localStorage.setItem(STORAGE_KEYS.INQUIRIES, JSON.stringify(updated));
-
-    const supabase = getSupabase();
-    if (supabase) {
-      await supabase.from('inquiries').delete().eq('id', id);
-    }
+    const updated=inquiries.filter(i=>i.id!==id);setInquiries(updated);localStorage.setItem(STORAGE_KEYS.INQUIRIES,JSON.stringify(updated));
+    const supabase=getSupabase();if(supabase){const {error}=await supabase.from('contact_submissions').delete().eq('id',id);if(error)throw error;}
   };
 
   const uploadImage = async (
