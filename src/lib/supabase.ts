@@ -65,7 +65,7 @@ export async function testSupabaseConnection(url?: string, anonKey?: string): Pr
 
     const testClient = createClient(testUrl, testAnon);
     // Ping basic auth or public query
-    const { error } = await testClient.from('site_settings').select('id').limit(1);
+    const { error } = await testClient.from('site_settings').select('key').limit(1);
 
     if (error && error.code !== 'PGRST116') {
       // If table doesn't exist yet, we still know the credentials authenticated if status code is not 401
