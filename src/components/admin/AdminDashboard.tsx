@@ -92,6 +92,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
 
   useEffect(() => {
     if (!isOpen) return;
+    setHeroForm({ ...heroSettings });
+    setSiteForm({ ...siteSettings, socialLinks: [...(siteSettings.socialLinks || [])] });
+    setFounderForm({ ...founder });
+    setServicesForm([...services]);
+    setPortfolioForm([...portfolio]);
+    setPerfumesForm([...perfumes]);
+  }, [isOpen, heroSettings, siteSettings, founder, services, portfolio, perfumes]);
+
+  useEffect(() => {
+    if (!isOpen) return;
     let cancelled = false;
     const supabase = getSupabase();
     setAdminAuthenticated(false);
@@ -187,8 +197,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
   };
 
   const handleSaveSite = async () => {
-    await saveSiteSettings(siteForm);
-    notify('Site branding and configuration saved!');
+    try { await saveSiteSettings(siteForm); notify('Site branding, social links and configuration saved!'); }
+    catch (error) { notify(`Site settings save failed: ${error instanceof Error ? error.message : 'Unknown error'}`); }
   };
 
   const handleSaveFounder = async () => {
@@ -217,8 +227,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
 
   const handleSavePortfolio = async (updated: PortfolioProject[]) => {
     setPortfolioForm(updated);
-    await savePortfolio(updated);
-    notify('Portfolio projects saved!');
+    try { await savePortfolio(updated); notify('Portfolio projects saved and removed items deleted from the live list.'); }
+    catch (error) { notify(`Portfolio save failed: ${error instanceof Error ? error.message : 'Unknown error'}`); }
   };
 
   const handleSavePerfumes = async (updated: PerfumeProduct[]) => {
@@ -1564,6 +1574,23 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                         className="w-full px-3 py-2 rounded-xl border border-[var(--color-border)] bg-[var(--bg-main)] text-xs"
                       />
                     </div>
+                  </div>
+
+                  <div className="pt-5 border-t border-[var(--color-border)] space-y-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <div><h4 className="text-sm font-bold text-[var(--text-primary)]">Footer Social Media Links</h4><p className="text-xs text-[var(--text-secondary)] mt-1">Add/remove icons, choose an icon, and set its destination URL. These links appear in the public footer.</p></div>
+                      <button type="button" onClick={() => setSiteForm(current => ({ ...current, socialLinks: [...(current.socialLinks || []), { id: `social-${Date.now()}`, label: 'New Link', icon: 'globe', url: '', enabled: true }] }))} className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-full bg-[var(--color-primary)] text-white"><Plus className="w-3.5 h-3.5" /> Add Link</button>
+                    </div>
+                    {(siteForm.socialLinks || []).length === 0 && <p className="text-xs text-[var(--text-secondary)]">No footer social links added yet.</p>}
+                    {(siteForm.socialLinks || []).map((link, index) => (
+                      <div key={link.id} className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end p-4 rounded-xl border border-[var(--color-border)] bg-[var(--bg-main)]">
+                        <div className="sm:col-span-3"><label className="block text-[10px] uppercase font-mono text-[var(--text-secondary)] mb-1">Label</label><input value={link.label} onChange={e => setSiteForm(current => ({ ...current, socialLinks: (current.socialLinks || []).map((item, i) => i === index ? { ...item, label: e.target.value } : item) }))} className="w-full px-3 py-2 rounded-lg border border-[var(--color-border)] bg-[var(--surface-card)] text-xs" /></div>
+                        <div className="sm:col-span-3"><label className="block text-[10px] uppercase font-mono text-[var(--text-secondary)] mb-1">Icon</label><select value={link.icon} onChange={e => setSiteForm(current => ({ ...current, socialLinks: (current.socialLinks || []).map((item, i) => i === index ? { ...item, icon: e.target.value } : item) }))} className="w-full px-3 py-2 rounded-lg border border-[var(--color-border)] bg-[var(--surface-card)] text-xs">{['instagram','facebook','linkedin','youtube','tiktok','twitter','mail','whatsapp','globe','link'].map(icon => <option key={icon} value={icon}>{icon}</option>)}</select></div>
+                        <div className="sm:col-span-4"><label className="block text-[10px] uppercase font-mono text-[var(--text-secondary)] mb-1">URL</label><input value={link.url} onChange={e => setSiteForm(current => ({ ...current, socialLinks: (current.socialLinks || []).map((item, i) => i === index ? { ...item, url: e.target.value } : item) }))} placeholder="https://..." className="w-full px-3 py-2 rounded-lg border border-[var(--color-border)] bg-[var(--surface-card)] text-xs" /></div>
+                        <div className="sm:col-span-1 flex items-center gap-2"><input aria-label="Show link in footer" type="checkbox" checked={link.enabled} onChange={e => setSiteForm(current => ({ ...current, socialLinks: (current.socialLinks || []).map((item, i) => i === index ? { ...item, enabled: e.target.checked } : item) }))} /><span className="text-[10px] text-[var(--text-secondary)]">Show</span></div>
+                        <div className="sm:col-span-1 flex justify-end"><button type="button" title="Remove social link" onClick={() => setSiteForm(current => ({ ...current, socialLinks: (current.socialLinks || []).filter((_, i) => i !== index) }))} className="p-2 text-rose-600 hover:bg-rose-50 rounded-lg"><Trash2 className="w-4 h-4" /></button></div>
+                      </div>
+                    ))}
                   </div>
 
                   <div className="pt-4 flex justify-end">
