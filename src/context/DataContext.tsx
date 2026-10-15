@@ -195,11 +195,11 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       if (error) throw new Error(`Could not save service "${s.title}": ${error.message}`);
     }
-    const { data: existing, error: listError } = await supabase.from('services').select('id');
+    const { data: existing, error: listError } = await supabase.from('services').select('id,published');
     if (listError) throw new Error(`Could not verify saved services: ${listError.message}`);
     const keepIds = new Set(newServices.map(s => s.id));
     for (const row of existing || []) {
-      if (!keepIds.has(row.id)) {
+      if (row.published !== false && !keepIds.has(row.id)) {
         const { error } = await supabase.from('services').delete().eq('id', row.id);
         if (error) throw new Error(`Could not remove deleted service: ${error.message}`);
       }
@@ -217,10 +217,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { error } = await supabase.from('portfolio_projects').upsert({ id: p.id, data: { id: p.id, title: p.title, category: p.category, client: p.client, year: p.year, description: p.summary, summary: p.summary, outcome: p.outcome, image: p.imageUrl, imageUrl: p.imageUrl, tags: p.tags, projectUrl: p.projectUrl, featured: p.featured, order: index, published: true }, sort_order: index, published: true, updated_at: new Date().toISOString() });
       if (error) throw new Error(`Could not save portfolio project \"${p.title}\": ${error.message}`);
     }
-    const { data: existing, error: listError } = await supabase.from('portfolio_projects').select('id');
+    const { data: existing, error: listError } = await supabase.from('portfolio_projects').select('id,published');
     if (listError) throw new Error(`Could not verify saved portfolio projects: ${listError.message}`);
     const keepIds = new Set(newPortfolio.map(p => p.id));
-    for (const row of existing || []) if (!keepIds.has(row.id)) {
+    for (const row of existing || []) if (row.published !== false && !keepIds.has(row.id)) {
       const { error } = await supabase.from('portfolio_projects').delete().eq('id', row.id);
       if (error) throw new Error(`Could not remove deleted portfolio project: ${error.message}`);
     }
