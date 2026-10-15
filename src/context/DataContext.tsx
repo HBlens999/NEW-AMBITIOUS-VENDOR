@@ -148,12 +148,12 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         supabase.from('perfume_products').select('id,data,sort_order,published').order('sort_order',{ascending:true}),
         supabase.from('contact_submissions').select('*').order('created_at',{ascending:false}),
       ]);
-      if(siteRes.data?.data){const d=siteRes.data.data;setSiteSettings(p=>({...p,siteTitle:d.siteName||d.logoText||p.siteTitle,tagline:d.tagline||p.tagline,metaDescription:d.seoDescription||d.metaDescription||p.metaDescription,logoUrl:d.logoUrl||p.logoUrl,faviconUrl:d.faviconUrl||p.faviconUrl,email:d.email||p.email,phone:d.phone||p.phone,whatsapp:d.whatsapp||p.whatsapp,address:d.address||p.address,marqueeSpeedSeconds:d.marqueeSpeedSeconds||p.marqueeSpeedSeconds}));}
+      if(siteRes.data?.data){const d=siteRes.data.data;setSiteSettings(p=>({...p,siteTitle:d.siteName||d.logoText||p.siteTitle,tagline:d.tagline||p.tagline,metaDescription:d.seoDescription||d.metaDescription||p.metaDescription,logoUrl:d.logoUrl||p.logoUrl,faviconUrl:d.faviconUrl||p.faviconUrl,email:d.email||p.email,phone:d.phone||p.phone,whatsapp:d.whatsapp||p.whatsapp,address:d.address||p.address,marqueeSpeedSeconds:d.marqueeSpeedSeconds||p.marqueeSpeedSeconds,socialLinks:Array.isArray(d.socialLinks)?d.socialLinks:p.socialLinks}));}
       if(heroRes.data?.data){const d=heroRes.data.data;setHeroSettings(p=>({...p,...d,headline:d.headline||p.headline,subheading:d.subheading||p.subheading,backgroundImageUrl:d.bgImage||d.backgroundImageUrl||p.backgroundImageUrl,duration:d.duration||p.duration}));}
       if(marqueeRes.data?.data){const d=marqueeRes.data.data;setSiteSettings(p=>({...p,marqueeSpeedSeconds:d.speedSeconds||p.marqueeSpeedSeconds}));}
       if(aboutRes.data?.data){const d=aboutRes.data.data;setFounder(p=>({...p,name:d.name||p.name,title:d.ceoTitle||d.title||p.title,brandRole:d.ceoName||d.brandRole||p.brandRole,bio:d.brandIntro||d.bio||p.bio,statement:d.headline||d.statement||p.statement,portraitUrl:d.ceoImage||d.portraitUrl||p.portraitUrl,email:d.email||p.email,phone:d.phone||p.phone,whatsapp:d.whatsapp||p.whatsapp,instagram:d.instagram||p.instagram,linkedin:d.linkedin||p.linkedin}));}
-      if(servicesRes.data)setServices(servicesRes.data.filter((r:any)=>r.published!==false).map((r:any)=>{const d=r.data||{};return{id:r.id,title:d.title||'',category:d.category||'',tagline:d.tagline||d.shortDescription||'',description:d.fullDescription||d.description||'',deliverables:Array.isArray(d.deliverables)?d.deliverables:[],imageUrl:d.image||d.imageUrl||'',ctaText:d.ctaText||'',sortOrder:r.sort_order??d.order??0};}));
-      if(portfolioRes.data?.length)setPortfolio(portfolioRes.data.filter((r:any)=>r.published!==false).map((r:any)=>{const d=r.data||{};return{id:r.id,title:d.title||'',category:d.category||'Graphic Design',client:d.client||'',year:String(d.year||''),summary:d.description||d.summary||'',outcome:d.outcome||'',imageUrl:d.image||d.imageUrl||'',tags:Array.isArray(d.tags)?d.tags:[],projectUrl:d.projectUrl||d.project_url||'',featured:Boolean(d.featured)};}));
+      if(!servicesRes.error){const loadedServices=(servicesRes.data||[]).filter((r:any)=>r.published!==false).map((r:any)=>{const d=r.data||{};return{id:r.id,title:d.title||'',category:d.category||'',tagline:d.tagline||d.shortDescription||'',description:d.fullDescription||d.description||'',deliverables:Array.isArray(d.deliverables)?d.deliverables:[],imageUrl:d.image||d.imageUrl||'',ctaText:d.ctaText||'',sortOrder:r.sort_order??d.order??0};});setServices(loadedServices);localStorage.setItem(STORAGE_KEYS.SERVICES,JSON.stringify(loadedServices));}
+      if(!portfolioRes.error){const loadedPortfolio=(portfolioRes.data||[]).filter((r:any)=>r.published!==false).map((r:any)=>{const d=r.data||{};return{id:r.id,title:d.title||'',category:d.category||'Graphic Design',client:d.client||'',year:String(d.year||''),summary:d.description||d.summary||'',outcome:d.outcome||'',imageUrl:d.image||d.imageUrl||'',tags:Array.isArray(d.tags)?d.tags:[],projectUrl:d.projectUrl||d.project_url||'',featured:Boolean(d.featured)};});setPortfolio(loadedPortfolio);localStorage.setItem(STORAGE_KEYS.PORTFOLIO,JSON.stringify(loadedPortfolio));}
       if(perfumesRes.data?.length)setPerfumes(perfumesRes.data.filter((r:any)=>r.published!==false).map((r:any)=>{const d=r.data||{};const price=Number(String(d.price||d.priceNaira||'0').replace(/[^0-9.]/g,''));const notes=typeof d.notes==='string'?{top:d.notes,heart:'',base:''}:(d.notes||{top:'',heart:'',base:''});return{id:r.id,name:d.name||'',subtitle:d.tagline||d.subtitle||'',volume:d.volume||'',priceNaira:Number.isFinite(price)?price:0,description:d.description||'',notes,imageUrl:d.image||d.imageUrl||'',inStock:(d.status||'Available')!=='Out of Stock',featured:Boolean(d.featured)};}));
       if(inquiriesRes.data)setInquiries(inquiriesRes.data.map((i:any)=>({id:i.id,name:i.full_name||'',email:i.email||'',phone:i.phone||'',serviceCategory:i.service||'',timeline:'',budgetRange:i.budget||'',message:i.message||'',status:(i.status==='In Progress'?'in_progress':i.status==='Resolved'?'completed':'new') as InquirySubmission['status'],createdAt:i.created_at})));
       setSupabaseConfig(p=>({...p,connected:true,lastChecked:new Date().toLocaleTimeString(),error:undefined}));
@@ -207,9 +207,23 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const savePortfolio = async (newPortfolio: PortfolioProject[]) => {
-    setPortfolio(newPortfolio); localStorage.setItem(STORAGE_KEYS.PORTFOLIO,JSON.stringify(newPortfolio));
-    const supabase=getSupabase(); if(!supabase)return;
-    for(const p of newPortfolio){const {error}=await supabase.from('portfolio_projects').upsert({id:p.id,data:{id:p.id,title:p.title,category:p.category,client:p.client,year:p.year,description:p.summary,summary:p.summary,outcome:p.outcome,image:p.imageUrl,tags:p.tags,projectUrl:p.projectUrl,featured:p.featured,order:newPortfolio.indexOf(p),published:true},sort_order:newPortfolio.indexOf(p),published:true});if(error)throw error;}
+    const supabase = getSupabase();
+    if (!supabase) throw new Error('Supabase is not configured. Portfolio changes cannot be published across devices.');
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (!sessionData.session) throw new Error('Please sign in to the admin portal before saving portfolio projects.');
+    for (const [index, p] of newPortfolio.entries()) {
+      const { error } = await supabase.from('portfolio_projects').upsert({ id: p.id, data: { id: p.id, title: p.title, category: p.category, client: p.client, year: p.year, description: p.summary, summary: p.summary, outcome: p.outcome, image: p.imageUrl, imageUrl: p.imageUrl, tags: p.tags, projectUrl: p.projectUrl, featured: p.featured, order: index, published: true }, sort_order: index, published: true, updated_at: new Date().toISOString() });
+      if (error) throw new Error(`Could not save portfolio project \"${p.title}\": ${error.message}`);
+    }
+    const { data: existing, error: listError } = await supabase.from('portfolio_projects').select('id');
+    if (listError) throw new Error(`Could not verify saved portfolio projects: ${listError.message}`);
+    const keepIds = new Set(newPortfolio.map(p => p.id));
+    for (const row of existing || []) if (!keepIds.has(row.id)) {
+      const { error } = await supabase.from('portfolio_projects').delete().eq('id', row.id);
+      if (error) throw new Error(`Could not remove deleted portfolio project: ${error.message}`);
+    }
+    setPortfolio(newPortfolio);
+    localStorage.setItem(STORAGE_KEYS.PORTFOLIO, JSON.stringify(newPortfolio));
   };
 
   const savePerfumes = async (newPerfumes: PerfumeProduct[]) => {
@@ -235,7 +249,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setSiteSettings(newSite); localStorage.setItem(STORAGE_KEYS.SITE,JSON.stringify(newSite));
     const supabase=getSupabase(); if(!supabase)return;
     const timestamp = new Date().toISOString();
-    const {error}=await supabase.from('site_settings').upsert({key:'current',data:{siteName:newSite.siteTitle,logoText:newSite.siteTitle,tagline:newSite.tagline,seoDescription:newSite.metaDescription,logoUrl:newSite.logoUrl,faviconUrl:newSite.faviconUrl,email:newSite.email,phone:newSite.phone,whatsapp:newSite.whatsapp,address:newSite.address,marqueeSpeedSeconds:newSite.marqueeSpeedSeconds},updated_at:timestamp});if(error)throw error;
+    const {error}=await supabase.from('site_settings').upsert({key:'current',data:{siteName:newSite.siteTitle,logoText:newSite.siteTitle,tagline:newSite.tagline,seoDescription:newSite.metaDescription,logoUrl:newSite.logoUrl,faviconUrl:newSite.faviconUrl,email:newSite.email,phone:newSite.phone,whatsapp:newSite.whatsapp,address:newSite.address,marqueeSpeedSeconds:newSite.marqueeSpeedSeconds,socialLinks:newSite.socialLinks||[]},updated_at:timestamp});if(error)throw error;
     const {data:existingMarquee,error:marqueeReadError}=await supabase.from('marquee_settings').select('data').eq('key','current').maybeSingle();if(marqueeReadError)throw marqueeReadError;
     const marqueeData={...(existingMarquee?.data||{}),speedSeconds:newSite.marqueeSpeedSeconds};
     const {error:marqueeError}=await supabase.from('marquee_settings').upsert({key:'current',data:marqueeData,updated_at:timestamp});if(marqueeError)throw marqueeError;
