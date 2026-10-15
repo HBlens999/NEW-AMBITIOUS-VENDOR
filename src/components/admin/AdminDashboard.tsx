@@ -1574,6 +1574,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                       <label className="text-xs font-mono uppercase text-[var(--text-secondary)] block mb-1.5">Section Description</label>
                       <textarea rows={2} value={siteForm.perfumeSectionDescription || ''} onChange={e => setSiteForm({ ...siteForm, perfumeSectionDescription: e.target.value })} className="w-full px-4 py-2.5 rounded-xl border border-[var(--color-border)] bg-[var(--bg-main)] text-sm" />
                     </div>
+                    <div className="flex justify-end">
+                      <button type="button" onClick={handleSaveSite} className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-[var(--color-primary)] hover:bg-[var(--color-secondary)] rounded-full"><Save className="w-3.5 h-3.5" /> Save Public Copy</button>
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
