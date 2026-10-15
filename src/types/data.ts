@@ -94,6 +94,10 @@ export interface SiteSettings {
   siteTitle: string;
   tagline: string;
   metaDescription: string;
+  footerDescription: string;
+  perfumeSectionKicker: string;
+  perfumeSectionTitle: string;
+  perfumeSectionDescription: string;
   logoUrl?: string;
   faviconUrl?: string;
   socialPreviewUrl?: string;
