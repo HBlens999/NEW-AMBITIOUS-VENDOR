@@ -3,14 +3,19 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 const STORAGE_KEY_SUPABASE_URL = 'ambitious_supabase_url';
 const STORAGE_KEY_SUPABASE_ANON = 'ambitious_supabase_anon';
 
+// Public client configuration fallback for this project. The anon key is intended
+// for browser use; database access remains protected by Supabase RLS policies.
+const PROJECT_SUPABASE_URL = 'https://dxlkifhyfurmssryqmom.supabase.co';
+const PROJECT_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR4bGtpZmh5ZnVybXNzcnlxbW9tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE4NzYxNzMsImV4cCI6MjEwNzQ1MjE3M30.QxKsskN-LW8thJBIcoIEP_yFt7zgzwRP5HR87sQwq2M';
+
 export function getStoredSupabaseConfig() {
   const envUrl = import.meta.env.VITE_SUPABASE_URL || '';
   const envAnon = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
   const storedUrl = localStorage.getItem(STORAGE_KEY_SUPABASE_URL) || '';
   const storedAnon = localStorage.getItem(STORAGE_KEY_SUPABASE_ANON) || '';
 
-  const url = storedUrl || envUrl;
-  const anonKey = storedAnon || envAnon;
+  const url = envUrl || storedUrl || PROJECT_SUPABASE_URL;
+  const anonKey = envAnon || storedAnon || PROJECT_SUPABASE_ANON_KEY;
 
   return {
     url,
