@@ -23,14 +23,14 @@ export const PerfumeSection: React.FC = () => {
         <div>
           <div className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[var(--color-secondary)] mb-2">
             <Droplets className="w-3.5 h-3.5" />
-            <span>03. Artisanal Fragrances</span>
+            <span>{siteSettings.perfumeSectionKicker || '03. Artisanal Fragrances'}</span>
           </div>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif font-bold text-[var(--text-primary)]">
-            Haute Parfumerie & Curated Scents
+            {siteSettings.perfumeSectionTitle || 'Haute Parfumerie & Curated Scents'}
           </h2>
         </div>
         <p className="max-w-md text-sm text-[var(--text-secondary)] leading-relaxed">
-          Niche artisanal perfumes, rare amber extracts, and signature fragrances curated for extraordinary longevity and presence.
+          {siteSettings.perfumeSectionDescription || 'Niche artisanal perfumes, rare amber extracts, and signature fragrances curated for extraordinary longevity and presence.'}
         </p>
       </div>
 
