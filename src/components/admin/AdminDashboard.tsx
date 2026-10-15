@@ -76,6 +76,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
   const [servicesForm, setServicesForm] = useState<ServiceItem[]>([...services]);
   const [portfolioForm, setPortfolioForm] = useState<PortfolioProject[]>([...portfolio]);
   const [perfumesForm, setPerfumesForm] = useState<PerfumeProduct[]>([...perfumes]);
+  const [isSavingPerfumes, setIsSavingPerfumes] = useState(false);
 
   // Supabase credentials form
   const [supaUrl, setSupaUrl] = useState(supabaseConfig.url || '');
@@ -231,10 +232,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
     catch (error) { notify(`Portfolio save failed: ${error instanceof Error ? error.message : 'Unknown error'}`); }
   };
 
-  const handleSavePerfumes = async (updated: PerfumeProduct[]) => {
-    setPerfumesForm(updated);
-    await savePerfumes(updated);
-    notify('Perfume products catalog saved!');
+  const handleSavePerfumes = async () => {
+    setIsSavingPerfumes(true);
+    try {
+      await savePerfumes(perfumesForm);
+      notify('Perfume catalogue saved and published to the live website.');
+    } catch (error) {
+      notify(`Perfume catalogue save failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsSavingPerfumes(false);
+    }
   };
 
   const handleTestSupabase = async () => {
@@ -1165,12 +1172,24 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                         inStock: true,
                         featured: true,
                       };
-                      handleSavePerfumes([newPerfume, ...perfumesForm]);
+                      setPerfumesForm([newPerfume, ...perfumesForm]);
                     }}
                     className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-[var(--color-primary)] rounded-full hover:bg-[var(--color-secondary)] transition-colors"
                   >
                     <Plus className="w-4 h-4" />
                     <span>Add Fragrance Flacon</span>
+                  </button>
+                </div>
+
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    onClick={handleSavePerfumes}
+                    disabled={isSavingPerfumes}
+                    className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-semibold text-white bg-emerald-700 rounded-full hover:bg-emerald-800 disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    <Save className="w-4 h-4" />
+                    {isSavingPerfumes ? 'Saving Catalogue…' : 'Save Catalogue Changes'}
                   </button>
                 </div>
 
@@ -1188,7 +1207,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                           const updated = perfumesForm.map(p =>
                             p.id === perfume.id ? { ...p, imageUrl: url } : p
                           );
-                          handleSavePerfumes(updated);
+                          setPerfumesForm(updated);
                         }}
                         aspectRatio="4/3"
                       />
@@ -1205,7 +1224,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                               const updated = perfumesForm.map(p =>
                                 p.id === perfume.id ? { ...p, name: e.target.value } : p
                               );
-                              handleSavePerfumes(updated);
+                              setPerfumesForm(updated);
                             }}
                             className="w-full px-3 py-1.5 rounded-lg border border-[var(--color-border)] bg-[var(--bg-main)] text-sm font-semibold"
                           />
@@ -1342,6 +1361,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                       </div>
                     </div>
                   ))}
+                </div>
+                <div className="flex justify-end border-t border-[var(--color-border)] pt-5">
+                  <button
+                    type="button"
+                    onClick={handleSavePerfumes}
+                    disabled={isSavingPerfumes}
+                    className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-semibold text-white bg-emerald-700 rounded-full hover:bg-emerald-800 disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    <Save className="w-4 h-4" />
+                    {isSavingPerfumes ? 'Saving Catalogue…' : 'Save Catalogue Changes'}
+                  </button>
                 </div>
               </div>
             )}
