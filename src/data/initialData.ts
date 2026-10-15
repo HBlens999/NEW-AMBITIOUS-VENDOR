@@ -182,17 +182,17 @@ export const INITIAL_PERFUMES: PerfumeProduct[] = [
 ];
 
 export const INITIAL_FOUNDER: FounderProfile = {
-  name: 'Joseph Chiemezie',
+  name: 'Elobisi Mmesoma',
   title: 'Creative Director & Founder',
   brandRole: 'AMBITIOUS VENDOR',
-  bio: 'Joseph Chiemezie is a multidisciplinary creative technologist, luxury brand designer, and fragrance curator based in Nigeria. Operating under the visionary banner of AMBITIOUS VENDOR, he blends aesthetic rigor, bespoke code engineering, and sensory fragrance curation to build unforgettable experiences.',
+  bio: 'Elobisi Mmesoma is a multidisciplinary creative technologist, luxury brand designer, and fragrance curator based in Nigeria. Operating under the visionary banner of AMBITIOUS VENDOR, Elobisi blends aesthetic rigor, bespoke code engineering, and sensory fragrance curation to build unforgettable experiences.',
   statement: 'True luxury lies at the intersection of intentional aesthetics, robust engineering, and sensory excellence.',
   portraitUrl: heroFounderImg,
-  email: 'josepchiemezie42@gmail.com',
+  email: '001ambitious@gmail.com',
   phone: '+234 814 000 0000',
   whatsapp: '+2348140000000',
   instagram: 'https://instagram.com/ambitiousvendor',
-  linkedin: 'https://linkedin.com/in/josephchiemezie',
+  linkedin: '',
   experienceYears: 7,
 };
 
@@ -213,7 +213,7 @@ export const INITIAL_HERO_SETTINGS: HeroSettings = {
 export const INITIAL_SITE_SETTINGS: SiteSettings = {
   siteTitle: 'AMBITIOUS VENDOR',
   tagline: 'Creative Agency & Luxury Fragrances',
-  footerDescription: 'Creative Agency & Luxury Fragrances. Founded and directed by Joseph Chiemezie. Delivering bespoke art direction, web engineering, sensory perfumery, and cinematic editing.',
+  footerDescription: 'Creative Agency & Luxury Fragrances. Founded and directed by Elobisi Mmesoma. Delivering bespoke art direction, web engineering, sensory perfumery, and cinematic editing.',
   perfumeSectionKicker: '03. Artisanal Fragrances',
   perfumeSectionTitle: 'Haute Parfumerie & Curated Scents',
   perfumeSectionDescription: 'Niche artisanal perfumes, rare amber extracts, and signature fragrances curated for extraordinary longevity and presence.',
@@ -227,8 +227,8 @@ export const INITIAL_SITE_SETTINGS: SiteSettings = {
   pauseMarqueeOnHover: true,
   socialLinks: [
     { id: 'instagram', label: 'Instagram', icon: 'instagram', url: 'https://instagram.com/ambitiousvendor', enabled: true },
-    { id: 'linkedin', label: 'LinkedIn', icon: 'linkedin', url: 'https://linkedin.com/in/josephchiemezie', enabled: true },
-    { id: 'email', label: 'Email', icon: 'mail', url: 'mailto:josepchiemezie42@gmail.com', enabled: true },
+    
+    { id: 'email', label: 'Email', icon: 'mail', url: 'mailto:001ambitious@gmail.com', enabled: true },
     { id: 'whatsapp', label: 'WhatsApp', icon: 'whatsapp', url: 'https://wa.me/2348140000000', enabled: true },
   ],
 };
