@@ -45,7 +45,7 @@ type AdminTab =
   | 'supabase';
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose }) => {
-  const { activePresetId, colors, setPreset, updateCustomColor, resetToPreset, presets } = useTheme();
+  const { activePresetId, colors, setPreset, updateCustomColor, resetToPreset, presets, saveThemeSettings } = useTheme();
   const {
     services,
     portfolio,
@@ -197,9 +197,22 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
   };
 
   const handleSaveServices = async (updated: ServiceItem[]) => {
-    setServicesForm(updated);
-    await saveServices(updated);
-    notify('Services updated and refreshed in marquee!');
+    try {
+      await saveServices(updated);
+      setServicesForm(updated);
+      notify('Services saved to Supabase and published across devices.');
+    } catch (error) {
+      notify(`Service save failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  };
+
+  const handleSaveTheme = async () => {
+    try {
+      await saveThemeSettings();
+      notify('Theme and preset saved to Supabase for all devices.');
+    } catch (error) {
+      notify(`Theme save failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
   };
 
   const handleSavePortfolio = async (updated: PortfolioProject[]) => {
@@ -681,6 +694,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                       </div>
                     </div>
                   </div>
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-t border-[var(--color-border)] pt-5">
+                    <p className="text-xs text-[var(--text-secondary)]">Preview changes apply immediately in this browser. Save to publish the preset and custom colors to every device.</p>
+                    <button onClick={handleSaveTheme} className="inline-flex items-center justify-center gap-2 px-6 py-2.5 text-xs font-semibold uppercase tracking-wider text-white bg-[var(--color-primary)] hover:bg-[var(--color-secondary)] rounded-full shadow-sm">
+                      <Save className="w-3.5 h-3.5" />
+                      <span>Save Theme & Preset</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
@@ -839,6 +859,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                       Updating service photography or titles here automatically updates both the main Services section AND the Right-to-Left moving Marquee.
                     </p>
                   </div>
+                  <button onClick={() => { void handleSaveServices(servicesForm); }} className="inline-flex items-center justify-center gap-2 px-5 py-2.5 text-xs font-semibold text-white bg-[var(--color-primary)] rounded-full hover:bg-[var(--color-secondary)]">
+                    <Save className="w-3.5 h-3.5" /> Save Services
+                  </button>
                 </div>
 
                 {/* Marquee Speed Settings */}
@@ -855,11 +878,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                       onChange={e => {
                         const val = parseInt(e.target.value);
                         setSiteForm({ ...siteForm, marqueeSpeedSeconds: val });
-                        saveSiteSettings({ ...siteForm, marqueeSpeedSeconds: val });
                       }}
                       className="w-32 cursor-pointer"
                     />
                     <span className="text-xs font-mono">{siteForm.marqueeSpeedSeconds}s / cycle</span>
+                    <button onClick={async () => { try { await saveSiteSettings(siteForm); notify('Marquee speed saved to Supabase for all devices.'); } catch (error) { notify(`Marquee save failed: ${error instanceof Error ? error.message : 'Unknown error'}`); } }} className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-[var(--color-primary)] rounded-full hover:bg-[var(--color-secondary)]"><Save className="w-3.5 h-3.5" /> Save Marquee</button>
                   </div>
                 </div>
 
@@ -891,7 +914,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                               const updated = servicesForm.map(s =>
                                 s.id === service.id ? { ...s, title: e.target.value } : s
                               );
-                              handleSaveServices(updated);
+                              setServicesForm(updated);
                             }}
                             className="w-full px-3 py-2 rounded-lg border border-[var(--color-border)] bg-[var(--bg-main)] text-sm font-semibold"
                           />
@@ -908,7 +931,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                               const updated = servicesForm.map(s =>
                                 s.id === service.id ? { ...s, category: e.target.value } : s
                               );
-                              handleSaveServices(updated);
+                              setServicesForm(updated);
                             }}
                             className="w-full px-3 py-2 rounded-lg border border-[var(--color-border)] bg-[var(--bg-main)] text-xs"
                           />
@@ -924,7 +947,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                               const updated = servicesForm.map(s =>
                                 s.id === service.id ? { ...s, imageUrl: url } : s
                               );
-                              handleSaveServices(updated);
+                              setServicesForm(updated);
                             }}
                             aspectRatio="4/3"
                           />
@@ -941,7 +964,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                               const updated = servicesForm.map(s =>
                                 s.id === service.id ? { ...s, description: e.target.value } : s
                               );
-                              handleSaveServices(updated);
+                              setServicesForm(updated);
                             }}
                             className="w-full px-3 py-2 rounded-lg border border-[var(--color-border)] bg-[var(--bg-main)] text-xs"
                           />
