@@ -221,4 +221,10 @@ export const INITIAL_SITE_SETTINGS: SiteSettings = {
   address: 'Lagos & Port Harcourt, Nigeria · Worldwide Remote',
   marqueeSpeedSeconds: 28,
   pauseMarqueeOnHover: true,
+  socialLinks: [
+    { id: 'instagram', label: 'Instagram', icon: 'instagram', url: 'https://instagram.com/ambitiousvendor', enabled: true },
+    { id: 'linkedin', label: 'LinkedIn', icon: 'linkedin', url: 'https://linkedin.com/in/josephchiemezie', enabled: true },
+    { id: 'email', label: 'Email', icon: 'mail', url: 'mailto:josepchiemezie42@gmail.com', enabled: true },
+    { id: 'whatsapp', label: 'WhatsApp', icon: 'whatsapp', url: 'https://wa.me/2348140000000', enabled: true },
+  ],
 };
