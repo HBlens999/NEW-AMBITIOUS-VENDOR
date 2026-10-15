@@ -213,8 +213,12 @@ export const INITIAL_HERO_SETTINGS: HeroSettings = {
 export const INITIAL_SITE_SETTINGS: SiteSettings = {
   siteTitle: 'AMBITIOUS VENDOR',
   tagline: 'Creative Agency & Luxury Fragrances',
+  footerDescription: 'Creative Agency & Luxury Fragrances. Founded and directed by Joseph Chiemezie. Delivering bespoke art direction, web engineering, sensory perfumery, and cinematic editing.',
+  perfumeSectionKicker: '03. Artisanal Fragrances',
+  perfumeSectionTitle: 'Haute Parfumerie & Curated Scents',
+  perfumeSectionDescription: 'Niche artisanal perfumes, rare amber extracts, and signature fragrances curated for extraordinary longevity and presence.',
   metaDescription:
-    'Premium personal brand and creative technology agency offering Graphic Design, Website Development, Luxury Perfumes, and Video Editing by Joseph Chiemezie.',
+    'Premium personal brand and creative technology agency offering Graphic Design, Website Development, Luxury Perfumes, and Video Editing by Elobisi Mmesoma.',
   email: 'josepchiemezie42@gmail.com',
   phone: '+234 814 000 0000',
   whatsapp: '+2348140000000',
