@@ -236,7 +236,9 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const supabase=getSupabase(); if(!supabase)return;
     const timestamp = new Date().toISOString();
     const {error}=await supabase.from('site_settings').upsert({key:'current',data:{siteName:newSite.siteTitle,logoText:newSite.siteTitle,tagline:newSite.tagline,seoDescription:newSite.metaDescription,logoUrl:newSite.logoUrl,faviconUrl:newSite.faviconUrl,email:newSite.email,phone:newSite.phone,whatsapp:newSite.whatsapp,address:newSite.address,marqueeSpeedSeconds:newSite.marqueeSpeedSeconds},updated_at:timestamp});if(error)throw error;
-    const {error:marqueeError}=await supabase.from('marquee_settings').upsert({key:'current',data:{speedSeconds:newSite.marqueeSpeedSeconds},updated_at:timestamp});if(marqueeError)throw marqueeError;
+    const {data:existingMarquee,error:marqueeReadError}=await supabase.from('marquee_settings').select('data').eq('key','current').maybeSingle();if(marqueeReadError)throw marqueeReadError;
+    const marqueeData={...(existingMarquee?.data||{}),speedSeconds:newSite.marqueeSpeedSeconds};
+    const {error:marqueeError}=await supabase.from('marquee_settings').upsert({key:'current',data:marqueeData,updated_at:timestamp});if(marqueeError)throw marqueeError;
   };
 
   const submitInquiry = async (
