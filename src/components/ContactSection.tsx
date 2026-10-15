@@ -153,7 +153,7 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ initialService =
                   <code className="font-mono text-xs text-[var(--color-primary)] bg-[var(--surface-card)] px-2 py-0.5 rounded">
                     {submittedId}
                   </code>
-                  . Joseph Chiemezie will review your request and reply shortly.
+                  . Elobisi Mmesoma will review your request and reply shortly.
                 </p>
                 <div className="mt-8 flex flex-col sm:flex-row gap-3">
                   <button
