@@ -36,8 +36,6 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return preset.colors;
   });
 
-  const [themeLoaded, setThemeLoaded] = useState(false);
-
   // Load the shared theme from Supabase first, falling back to this browser's saved values.
   useEffect(() => {
     let cancelled = false;
@@ -60,7 +58,6 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           console.warn('Could not load shared theme settings:', error);
         }
       }
-      if (!cancelled) setThemeLoaded(true);
     };
     void loadTheme();
     return () => { cancelled = true; };
