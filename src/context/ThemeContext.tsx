@@ -46,11 +46,14 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           const { data, error } = await supabase.from('theme_settings').select('data').eq('key', 'current').maybeSingle();
           if (!error && data?.data && !cancelled) {
             const saved = data.data as { activePresetId?: string; colors?: ThemeColors };
-            const preset = THEME_PRESETS.find(p => p.id === saved.activePresetId) || THEME_PRESETS[0];
+            const legacyPresetMap: Record<string, string> = { ocean: 'ocean-sapphire', blush: 'blush-luxury', gold: 'midnight-gold' };
+            const requestedPreset = saved.activePresetId || legacyPresetMap[(data.data as any).preset] || (data.data as any).preset;
+            const preset = THEME_PRESETS.find(p => p.id === requestedPreset) || THEME_PRESETS[0];
+            const storedColors = saved.colors && typeof saved.colors === 'object' && 'bgMain' in saved.colors ? saved.colors : preset.colors;
             setActivePresetId(preset.id);
-            setColors(saved.colors || preset.colors);
+            setColors(storedColors);
             localStorage.setItem(STORAGE_KEY_PRESET, preset.id);
-            localStorage.setItem(STORAGE_KEY_COLORS, JSON.stringify(saved.colors || preset.colors));
+            localStorage.setItem(STORAGE_KEY_COLORS, JSON.stringify(storedColors));
           } else if (error) {
             console.warn('Could not load shared theme settings:', error.message);
           }
