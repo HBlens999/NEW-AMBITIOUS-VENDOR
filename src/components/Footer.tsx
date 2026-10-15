@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowUp, Instagram, Linkedin, Mail, MessageCircle, Shield } from 'lucide-react';
+import { ArrowUp, Instagram, Linkedin, Mail, MessageCircle, Shield, Facebook, Youtube, Music2, Globe, Link2, Twitter } from 'lucide-react';
 import { useData } from '../context/DataContext';
 import { useTheme } from '../context/ThemeContext';
 
@@ -8,10 +8,26 @@ interface FooterProps {
 }
 
 export const Footer: React.FC<FooterProps> = ({ onOpenAdmin }) => {
-  const { siteSettings, founder } = useData();
+  const { siteSettings } = useData();
   const { activePresetId, presets } = useTheme();
 
   const activePreset = presets.find(p => p.id === activePresetId);
+  const socialIcon = (name: string) => {
+    const common = 'w-4 h-4';
+    switch (name.toLowerCase()) {
+      case 'instagram': return <Instagram className={common} />;
+      case 'linkedin': return <Linkedin className={common} />;
+      case 'facebook': return <Facebook className={common} />;
+      case 'youtube': return <Youtube className={common} />;
+      case 'tiktok': return <Music2 className={common} />;
+      case 'twitter': case 'x': return <Twitter className={common} />;
+      case 'mail': case 'email': return <Mail className={common} />;
+      case 'whatsapp': case 'message-circle': return <MessageCircle className={common} />;
+      case 'globe': case 'website': return <Globe className={common} />;
+      default: return <Link2 className={common} />;
+    }
+  };
+  const socialLinks = (siteSettings.socialLinks || []).filter(link => link.enabled && link.url.trim());
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -34,49 +50,12 @@ export const Footer: React.FC<FooterProps> = ({ onOpenAdmin }) => {
             <p className="text-sm text-[var(--text-secondary)] leading-relaxed max-w-sm">
               {siteSettings.tagline || 'Creative Agency & Luxury Fragrances'}. Founded and directed by Joseph Chiemezie. Delivering bespoke art direction, web engineering, sensory perfumery, and cinematic editing.
             </p>
-            <div className="flex items-center gap-3 pt-2">
-              {founder.instagram && (
-                <a
-                  href={founder.instagram}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="p-2 rounded-full border border-[var(--color-border)] text-[var(--text-secondary)] hover:text-[var(--color-primary)] hover:border-[var(--color-primary)] transition-all"
-                  aria-label="Instagram"
-                >
-                  <Instagram className="w-4 h-4" />
+            <div className="flex flex-wrap items-center gap-3 pt-2">
+              {socialLinks.map(link => (
+                <a key={link.id} href={link.url} target={link.url.startsWith('mailto:') ? undefined : '_blank'} rel={link.url.startsWith('mailto:') ? undefined : 'noreferrer'} className="p-2 rounded-full border border-[var(--color-border)] text-[var(--text-secondary)] hover:text-[var(--color-primary)] hover:border-[var(--color-primary)] transition-all" aria-label={link.label} title={link.label}>
+                  {socialIcon(link.icon)}
                 </a>
-              )}
-              {founder.linkedin && (
-                <a
-                  href={founder.linkedin}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="p-2 rounded-full border border-[var(--color-border)] text-[var(--text-secondary)] hover:text-[var(--color-primary)] hover:border-[var(--color-primary)] transition-all"
-                  aria-label="LinkedIn"
-                >
-                  <Linkedin className="w-4 h-4" />
-                </a>
-              )}
-              {founder.email && (
-                <a
-                  href={`mailto:${founder.email}`}
-                  className="p-2 rounded-full border border-[var(--color-border)] text-[var(--text-secondary)] hover:text-[var(--color-primary)] hover:border-[var(--color-primary)] transition-all"
-                  aria-label="Email"
-                >
-                  <Mail className="w-4 h-4" />
-                </a>
-              )}
-              {siteSettings.whatsapp && (
-                <a
-                  href={`https://wa.me/${siteSettings.whatsapp.replace(/[^0-9]/g, '')}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="p-2 rounded-full border border-[var(--color-border)] text-[var(--text-secondary)] hover:text-emerald-600 hover:border-emerald-600 transition-all"
-                  aria-label="WhatsApp"
-                >
-                  <MessageCircle className="w-4 h-4" />
-                </a>
-              )}
+              ))}
             </div>
           </div>
 
