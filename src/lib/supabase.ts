@@ -68,7 +68,15 @@ export async function testSupabaseConnection(url?: string, anonKey?: string): Pr
       return { success: false, message: 'Supabase URL and Anon Key are required.' };
     }
 
-    const testClient = createClient(testUrl, testAnon);
+    // Connection probes must not create another persistent Auth session in the
+    // same browser. This prevents GoTrueClient storage-key collision warnings.
+    const testClient = createClient(testUrl, testAnon, {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+        detectSessionInUrl: false,
+      },
+    });
     // Ping basic auth or public query
     const { error } = await testClient.from('site_settings').select('key').limit(1);
 
