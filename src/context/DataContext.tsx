@@ -156,7 +156,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if(aboutRes.data?.data){const d=aboutRes.data.data;setFounder(p=>({...p,name:d.name||p.name,title:d.ceoTitle||d.title||p.title,brandRole:d.ceoName||d.brandRole||p.brandRole,bio:d.brandIntro||d.bio||p.bio,statement:d.headline||d.statement||p.statement,portraitUrl:d.ceoImage||d.portraitUrl||p.portraitUrl,email:d.email||p.email,phone:d.phone||p.phone,whatsapp:d.whatsapp||p.whatsapp,instagram:d.instagram||p.instagram,linkedin:d.linkedin ?? p.linkedin}));}
       if(!servicesRes.error){const loadedServices=(servicesRes.data||[]).filter((r:any)=>r.published!==false).map((r:any)=>{const d=r.data||{};return{id:r.id,title:d.title||'',category:d.category||'',tagline:d.tagline||d.shortDescription||'',description:d.fullDescription||d.description||'',deliverables:Array.isArray(d.deliverables)?d.deliverables:[],imageUrl:d.image||d.imageUrl||'',ctaText:d.ctaText||'',sortOrder:r.sort_order??d.order??0};});setServices(loadedServices);localStorage.setItem(STORAGE_KEYS.SERVICES,JSON.stringify(loadedServices));}
       if(!portfolioRes.error){const loadedPortfolio=(portfolioRes.data||[]).filter((r:any)=>r.published!==false).map((r:any)=>{const d=r.data||{};return{id:r.id,title:d.title||'',category:d.category||'Graphic Design',client:d.client||'',year:String(d.year||''),summary:d.description||d.summary||'',outcome:d.outcome||'',imageUrl:d.image||d.imageUrl||'',tags:Array.isArray(d.tags)?d.tags:[],projectUrl:d.projectUrl||d.project_url||'',featured:Boolean(d.featured)};});setPortfolio(loadedPortfolio);localStorage.setItem(STORAGE_KEYS.PORTFOLIO,JSON.stringify(loadedPortfolio));}
-      if(perfumesRes.data?.length)setPerfumes(perfumesRes.data.filter((r:any)=>r.published!==false).map((r:any)=>{const d=r.data||{};const price=Number(String(d.price||d.priceNaira||'0').replace(/[^0-9.]/g,''));const notes=typeof d.notes==='string'?{top:d.notes,heart:'',base:''}:(d.notes||{top:'',heart:'',base:''});return{id:r.id,name:d.name||'',subtitle:d.tagline||d.subtitle||'',volume:d.volume||'',priceNaira:Number.isFinite(price)?price:0,description:d.description||'',notes,imageUrl:d.image||d.imageUrl||'',inStock:(d.status||'Available')!=='Out of Stock',featured:Boolean(d.featured)};}));
+      if(!perfumesRes.error)setPerfumes((perfumesRes.data||[]).filter((r:any)=>r.published!==false).map((r:any)=>{const d=r.data||{};const price=Number(String(d.price||d.priceNaira||'0').replace(/[^0-9.]/g,''));const notes=typeof d.notes==='string'?{top:d.notes,heart:'',base:''}:(d.notes||{top:'',heart:'',base:''});return{id:r.id,name:d.name||'',subtitle:d.tagline||d.subtitle||'',volume:d.volume||'',priceNaira:Number.isFinite(price)?price:0,description:d.description||'',notes,imageUrl:d.image||d.imageUrl||'',inStock:(d.status||'Available')!=='Out of Stock',featured:Boolean(d.featured)};}));
       if(inquiriesRes.data)setInquiries(inquiriesRes.data.map((i:any)=>({id:i.id,name:i.full_name||'',email:i.email||'',phone:i.phone||'',serviceCategory:i.service||'',timeline:'',budgetRange:i.budget||'',message:i.message||'',status:(i.status==='In Progress'?'in_progress':i.status==='Resolved'?'completed':'new') as InquirySubmission['status'],createdAt:i.created_at})));
       setSupabaseConfig(p=>({...p,connected:true,lastChecked:new Date().toLocaleTimeString(),error:undefined}));
     } catch(err) { console.warn('Supabase fetch error:',err); setSupabaseConfig(p=>({...p,connected:false,error:err instanceof Error?err.message:'Could not load Supabase data'})); }
@@ -229,9 +229,53 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const savePerfumes = async (newPerfumes: PerfumeProduct[]) => {
-    setPerfumes(newPerfumes); localStorage.setItem(STORAGE_KEYS.PERFUMES,JSON.stringify(newPerfumes));
-    const supabase=getSupabase(); if(!supabase)return;
-    for(const p of newPerfumes){const {error}=await supabase.from('perfume_products').upsert({id:p.id,data:{id:p.id,name:p.name,tagline:p.subtitle,subtitle:p.subtitle,volume:p.volume,price:String(p.priceNaira),priceNaira:p.priceNaira,description:p.description,notes:[p.notes.top,p.notes.heart,p.notes.base].filter(Boolean).join(' · '),image:p.imageUrl,status:p.inStock?'Available':'Out of Stock',featured:p.featured,order:newPerfumes.indexOf(p),published:true},sort_order:newPerfumes.indexOf(p),published:true});if(error)throw error;}
+    const supabase = getSupabase();
+    if (!supabase) throw new Error('Supabase is not connected. The perfume catalogue was not saved.');
+
+    // Read existing rows first so removals in the admin draft are also removed from the live catalogue.
+    const { data: existingRows, error: readError } = await supabase
+      .from('perfume_products')
+      .select('id');
+    if (readError) throw readError;
+
+    for (const [index, perfume] of newPerfumes.entries()) {
+      const { error } = await supabase.from('perfume_products').upsert({
+        id: perfume.id,
+        data: {
+          id: perfume.id,
+          name: perfume.name,
+          tagline: perfume.subtitle,
+          subtitle: perfume.subtitle,
+          volume: perfume.volume,
+          price: String(perfume.priceNaira),
+          priceNaira: perfume.priceNaira,
+          description: perfume.description,
+          notes: perfume.notes,
+          image: perfume.imageUrl,
+          imageUrl: perfume.imageUrl,
+          status: perfume.inStock ? 'Available' : 'Out of Stock',
+          featured: perfume.featured,
+          order: index,
+          published: true,
+        },
+        sort_order: index,
+        published: true,
+      });
+      if (error) throw error;
+    }
+
+    const retainedIds = new Set(newPerfumes.map(perfume => perfume.id));
+    const removedRows = (existingRows || []).filter((row: { id: string }) => !retainedIds.has(row.id));
+    for (const row of removedRows) {
+      const { error } = await supabase
+        .from('perfume_products')
+        .update({ published: false })
+        .eq('id', row.id);
+      if (error) throw error;
+    }
+
+    setPerfumes(newPerfumes);
+    localStorage.setItem(STORAGE_KEYS.PERFUMES, JSON.stringify(newPerfumes));
   };
 
   const saveFounder = async (newFounder: FounderProfile) => {
