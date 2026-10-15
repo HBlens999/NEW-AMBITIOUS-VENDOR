@@ -1530,14 +1530,50 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
 
                   <div>
                     <label className="text-xs font-mono uppercase text-[var(--text-secondary)] block mb-1.5">
-                      Meta Description (SEO & OpenGraph)
+                      Public Website Description (Hero & SEO)
                     </label>
                     <textarea
-                      rows={2}
+                      rows={3}
                       value={siteForm.metaDescription}
                       onChange={e => setSiteForm({ ...siteForm, metaDescription: e.target.value })}
+                      placeholder="Describe the brand and its services. This text appears on the live homepage and is also used for SEO."
                       className="w-full px-4 py-2.5 rounded-xl border border-[var(--color-border)] bg-[var(--bg-main)] text-sm"
                     />
+                    <p className="text-[11px] text-[var(--text-secondary)] mt-1">Saving this field updates the visible homepage description as well as the SEO description.</p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-xs font-mono uppercase text-[var(--text-secondary)] block mb-1.5">
+                      Footer Brand Description
+                    </label>
+                    <textarea
+                      rows={3}
+                      value={siteForm.footerDescription || ''}
+                      onChange={e => setSiteForm({ ...siteForm, footerDescription: e.target.value })}
+                      placeholder="Write the paragraph displayed below the brand name and above the social media icons."
+                      className="w-full px-4 py-2.5 rounded-xl border border-[var(--color-border)] bg-[var(--bg-main)] text-sm"
+                    />
+                  </div>
+
+                  <div className="pt-4 border-t border-[var(--color-border)] space-y-4">
+                    <div>
+                      <h4 className="text-sm font-bold text-[var(--text-primary)]">Fragrance Section Copy</h4>
+                      <p className="text-xs text-[var(--text-secondary)] mt-1">Edit the heading and description shown above the perfume products on the live website.</p>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-xs font-mono uppercase text-[var(--text-secondary)] block mb-1.5">Section Kicker</label>
+                        <input value={siteForm.perfumeSectionKicker || ''} onChange={e => setSiteForm({ ...siteForm, perfumeSectionKicker: e.target.value })} placeholder="03. Artisanal Fragrances" className="w-full px-4 py-2.5 rounded-xl border border-[var(--color-border)] bg-[var(--bg-main)] text-sm" />
+                      </div>
+                      <div>
+                        <label className="text-xs font-mono uppercase text-[var(--text-secondary)] block mb-1.5">Section Heading</label>
+                        <input value={siteForm.perfumeSectionTitle || ''} onChange={e => setSiteForm({ ...siteForm, perfumeSectionTitle: e.target.value })} placeholder="Haute Parfumerie & Curated Scents" className="w-full px-4 py-2.5 rounded-xl border border-[var(--color-border)] bg-[var(--bg-main)] text-sm" />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-xs font-mono uppercase text-[var(--text-secondary)] block mb-1.5">Section Description</label>
+                      <textarea rows={2} value={siteForm.perfumeSectionDescription || ''} onChange={e => setSiteForm({ ...siteForm, perfumeSectionDescription: e.target.value })} className="w-full px-4 py-2.5 rounded-xl border border-[var(--color-border)] bg-[var(--bg-main)] text-sm" />
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
