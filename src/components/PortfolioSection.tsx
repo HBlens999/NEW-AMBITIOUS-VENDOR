@@ -8,7 +8,8 @@ export const PortfolioSection: React.FC = () => {
   const [activeCategory, setActiveCategory] = useState<string>('All');
   const [selectedProject, setSelectedProject] = useState<PortfolioProject | null>(null);
 
-  const categories = ['All', 'Graphic Design', 'Website Development', 'Video Editing'];
+  // Derive category tabs from current projects so obsolete categories disappear automatically.
+  const categories = ['All', ...Array.from(new Set(portfolio.map(project => project.category).filter(Boolean)))];
 
   const filteredProjects =
     activeCategory === 'All'
