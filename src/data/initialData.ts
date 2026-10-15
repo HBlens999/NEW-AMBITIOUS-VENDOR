@@ -219,7 +219,7 @@ export const INITIAL_SITE_SETTINGS: SiteSettings = {
   perfumeSectionDescription: 'Niche artisanal perfumes, rare amber extracts, and signature fragrances curated for extraordinary longevity and presence.',
   metaDescription:
     'Premium personal brand and creative technology agency offering Graphic Design, Website Development, Luxury Perfumes, and Video Editing by Elobisi Mmesoma.',
-  email: 'josepchiemezie42@gmail.com',
+  email: '001ambitious@gmail.com',
   phone: '+234 814 000 0000',
   whatsapp: '+2348140000000',
   address: 'Lagos & Port Harcourt, Nigeria · Worldwide Remote',
