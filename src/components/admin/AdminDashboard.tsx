@@ -1012,13 +1012,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                         tags: ['Art Direction'],
                         featured: true,
                       };
-                      handleSavePortfolio([newProj, ...portfolioForm]);
+                      setPortfolioForm([newProj, ...portfolioForm]);
                     }}
                     className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-[var(--color-primary)] rounded-full hover:bg-[var(--color-secondary)] transition-colors"
                   >
                     <Plus className="w-4 h-4" />
                     <span>Add Project Case</span>
                   </button>
+                  <button onClick={() => { void handleSavePortfolio(portfolioForm); }} className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-emerald-700 rounded-full hover:bg-emerald-800 transition-colors"><Save className="w-3.5 h-3.5" /> Save Portfolio Changes</button>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -1035,7 +1036,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                           const updated = portfolioForm.map(p =>
                             p.id === project.id ? { ...p, imageUrl: url } : p
                           );
-                          handleSavePortfolio(updated);
+                          setPortfolioForm(updated);
                         }}
                         aspectRatio="16/9"
                       />
@@ -1051,7 +1052,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                             const updated = portfolioForm.map(p =>
                               p.id === project.id ? { ...p, title: e.target.value } : p
                             );
-                            handleSavePortfolio(updated);
+                            setPortfolioForm(updated);
                           }}
                           className="w-full px-3 py-1.5 rounded-lg border border-[var(--color-border)] bg-[var(--bg-main)] text-sm font-semibold"
                         />
@@ -1070,7 +1071,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                                   ? { ...p, category: e.target.value as PortfolioProject['category'] }
                                   : p
                               );
-                              handleSavePortfolio(updated);
+                              setPortfolioForm(updated);
                             }}
                             className="w-full px-2.5 py-1.5 rounded-lg border border-[var(--color-border)] bg-[var(--bg-main)] text-xs"
                           >
@@ -1091,7 +1092,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                               const updated = portfolioForm.map(p =>
                                 p.id === project.id ? { ...p, client: e.target.value } : p
                               );
-                              handleSavePortfolio(updated);
+                              setPortfolioForm(updated);
                             }}
                             className="w-full px-2.5 py-1.5 rounded-lg border border-[var(--color-border)] bg-[var(--bg-main)] text-xs"
                           />
@@ -1109,7 +1110,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                             const updated = portfolioForm.map(p =>
                               p.id === project.id ? { ...p, outcome: e.target.value } : p
                             );
-                            handleSavePortfolio(updated);
+                            setPortfolioForm(updated);
                           }}
                           className="w-full px-3 py-1.5 rounded-lg border border-[var(--color-border)] bg-[var(--bg-main)] text-xs text-[var(--color-primary)] font-medium"
                         />
@@ -1119,7 +1120,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                         <button
                           onClick={() => {
                             const updated = portfolioForm.filter(p => p.id !== project.id);
-                            handleSavePortfolio(updated);
+                            setPortfolioForm(updated);
                           }}
                           className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
                           title="Delete Project"
