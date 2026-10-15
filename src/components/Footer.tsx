@@ -48,7 +48,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenAdmin }) => {
               </span>
             </div>
             <p className="text-sm text-[var(--text-secondary)] leading-relaxed max-w-sm">
-              {siteSettings.tagline || 'Creative Agency & Luxury Fragrances'}. Founded and directed by Joseph Chiemezie. Delivering bespoke art direction, web engineering, sensory perfumery, and cinematic editing.
+              {siteSettings.footerDescription || `${siteSettings.tagline || 'Creative Agency & Luxury Fragrances'}. Founded and directed by Joseph Chiemezie. Delivering bespoke art direction, web engineering, sensory perfumery, and cinematic editing.`}
             </p>
             <div className="flex flex-wrap items-center gap-3 pt-2">
               {socialLinks.map(link => (
