@@ -249,6 +249,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const saveSiteSettings = async (newSite: SiteSettings) => {
     setSiteSettings(newSite); localStorage.setItem(STORAGE_KEYS.SITE,JSON.stringify(newSite));
+    setHeroSettings(current => { const updated = { ...current, description: newSite.metaDescription }; localStorage.setItem(STORAGE_KEYS.HERO, JSON.stringify(updated)); return updated; });
     const supabase=getSupabase(); if(!supabase)return;
     const timestamp = new Date().toISOString();
     const {error}=await supabase.from('site_settings').upsert({key:'current',data:{siteName:newSite.siteTitle,logoText:newSite.siteTitle,tagline:newSite.tagline,seoDescription:newSite.metaDescription,footerDescription:newSite.footerDescription,perfumeSectionKicker:newSite.perfumeSectionKicker,perfumeSectionTitle:newSite.perfumeSectionTitle,perfumeSectionDescription:newSite.perfumeSectionDescription,logoUrl:newSite.logoUrl,faviconUrl:newSite.faviconUrl,email:newSite.email,phone:newSite.phone,whatsapp:newSite.whatsapp,address:newSite.address,marqueeSpeedSeconds:newSite.marqueeSpeedSeconds,socialLinks:newSite.socialLinks||[]},updated_at:timestamp});if(error)throw error;
