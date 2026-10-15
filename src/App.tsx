@@ -44,7 +44,7 @@ export default function App() {
             {/* 5. Haute Parfumerie & Luxury Scents Showcase */}
             <PerfumeSection />
 
-            {/* 6. Founder & CEO Showcase (Joseph Chiemezie) */}
+            {/* 6. Founder & CEO Showcase (Elobisi Mmesoma) */}
             <FounderSection />
 
             {/* 7. Consultation Inquiry & Project Contact */}
