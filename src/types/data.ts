@@ -82,6 +82,14 @@ export interface HeroSettings {
   backgroundImageUrl?: string;
 }
 
+export interface SocialLink {
+  id: string;
+  label: string;
+  icon: string;
+  url: string;
+  enabled: boolean;
+}
+
 export interface SiteSettings {
   siteTitle: string;
   tagline: string;
@@ -95,6 +103,7 @@ export interface SiteSettings {
   address: string;
   marqueeSpeedSeconds: number;
   pauseMarqueeOnHover: boolean;
+  socialLinks?: SocialLink[];
 }
 
 export interface SupabaseConfig {
