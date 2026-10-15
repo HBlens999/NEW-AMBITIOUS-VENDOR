@@ -1069,23 +1069,18 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                           <label className="text-[10px] font-mono uppercase text-[var(--text-secondary)] block mb-1">
                             Discipline
                           </label>
-                          <select
+                          <input
+                            type="text"
                             value={project.category}
+                            placeholder="Enter or create a category"
                             onChange={e => {
                               const updated = portfolioForm.map(p =>
-                                p.id === project.id
-                                  ? { ...p, category: e.target.value as PortfolioProject['category'] }
-                                  : p
+                                p.id === project.id ? { ...p, category: e.target.value } : p
                               );
                               setPortfolioForm(updated);
                             }}
                             className="w-full px-2.5 py-1.5 rounded-lg border border-[var(--color-border)] bg-[var(--bg-main)] text-xs"
-                          >
-                            <option value="Graphic Design">Graphic Design</option>
-                            <option value="Website Development">Website Development</option>
-                            <option value="Video Editing">Video Editing</option>
-                            <option value="Brand Identity">Brand Identity</option>
-                          </select>
+                          />
                         </div>
                         <div>
                           <label className="text-[10px] font-mono uppercase text-[var(--text-secondary)] block mb-1">
