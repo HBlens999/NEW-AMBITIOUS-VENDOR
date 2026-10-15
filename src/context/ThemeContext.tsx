@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { THEME_PRESETS, ThemeColors, ThemePreset } from '../types/theme';
+import { getSupabase } from '../lib/supabase';
 
 interface ThemeContextType {
   activePresetId: string;
@@ -9,6 +10,7 @@ interface ThemeContextType {
   updateCustomColor: (key: keyof ThemeColors, value: string) => void;
   resetToPreset: (presetId?: string) => void;
   presets: ThemePreset[];
+  saveThemeSettings: () => Promise<void>;
 }
 
 const STORAGE_KEY_PRESET = 'ambitious_theme_preset';
@@ -34,6 +36,48 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return preset.colors;
   });
 
+  const [themeLoaded, setThemeLoaded] = useState(false);
+
+  // Load the shared theme from Supabase first, falling back to this browser's saved values.
+  useEffect(() => {
+    let cancelled = false;
+    const loadTheme = async () => {
+      const supabase = getSupabase();
+      if (supabase) {
+        try {
+          const { data, error } = await supabase.from('theme_settings').select('data').eq('key', 'current').maybeSingle();
+          if (!error && data?.data && !cancelled) {
+            const saved = data.data as { activePresetId?: string; colors?: ThemeColors };
+            const preset = THEME_PRESETS.find(p => p.id === saved.activePresetId) || THEME_PRESETS[0];
+            setActivePresetId(preset.id);
+            setColors(saved.colors || preset.colors);
+            localStorage.setItem(STORAGE_KEY_PRESET, preset.id);
+            localStorage.setItem(STORAGE_KEY_COLORS, JSON.stringify(saved.colors || preset.colors));
+          } else if (error) {
+            console.warn('Could not load shared theme settings:', error.message);
+          }
+        } catch (error) {
+          console.warn('Could not load shared theme settings:', error);
+        }
+      }
+      if (!cancelled) setThemeLoaded(true);
+    };
+    void loadTheme();
+    return () => { cancelled = true; };
+  }, []);
+
+  const saveThemeSettings = async () => {
+    const supabase = getSupabase();
+    if (!supabase) throw new Error('Supabase is not configured. Theme changes cannot be shared across devices.');
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (!sessionData.session) throw new Error('Please sign in to the admin portal before saving theme settings.');
+    const payload = { activePresetId, colors };
+    const { error } = await supabase.from('theme_settings').upsert({ key: 'current', data: payload, updated_at: new Date().toISOString() });
+    if (error) throw error;
+    localStorage.setItem(STORAGE_KEY_PRESET, activePresetId);
+    localStorage.setItem(STORAGE_KEY_COLORS, JSON.stringify(colors));
+  };
+
   // Apply colors to CSS custom variables on root
   useEffect(() => {
     const root = document.documentElement;
@@ -49,7 +93,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     root.style.setProperty('--color-highlight', colors.colorHighlight);
     root.style.setProperty('--hero-bg', colors.heroBg || '#0C0A0D');
 
-    // Save to localStorage
+    // Keep a local fallback for quick preview, but shared persistence requires Save Theme.
     localStorage.setItem(STORAGE_KEY_PRESET, activePresetId);
     localStorage.setItem(STORAGE_KEY_COLORS, JSON.stringify(colors));
   }, [colors, activePresetId]);
@@ -87,6 +131,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         updateCustomColor,
         resetToPreset,
         presets: THEME_PRESETS,
+        saveThemeSettings,
       }}
     >
       {children}
