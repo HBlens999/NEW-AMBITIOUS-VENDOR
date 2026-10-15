@@ -13,7 +13,7 @@ export interface ServiceItem {
 export interface PortfolioProject {
   id: string;
   title: string;
-  category: 'Graphic Design' | 'Website Development' | 'Video Editing' | 'Brand Identity';
+  category: string;
   client: string;
   year: string;
   summary: string;
