@@ -92,7 +92,9 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const [siteSettings, setSiteSettings] = useState<SiteSettings>(() => {
     const saved = localStorage.getItem(STORAGE_KEYS.SITE);
-    return saved ? JSON.parse(saved) : INITIAL_SITE_SETTINGS;
+    if (!saved) return INITIAL_SITE_SETTINGS;
+    const parsed = JSON.parse(saved);
+    return { ...INITIAL_SITE_SETTINGS, ...parsed, socialLinks: Array.isArray(parsed.socialLinks) ? parsed.socialLinks : INITIAL_SITE_SETTINGS.socialLinks };
   });
 
   const [inquiries, setInquiries] = useState<InquirySubmission[]>(() => {
@@ -148,7 +150,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         supabase.from('perfume_products').select('id,data,sort_order,published').order('sort_order',{ascending:true}),
         supabase.from('contact_submissions').select('*').order('created_at',{ascending:false}),
       ]);
-      if(siteRes.data?.data){const d=siteRes.data.data;setSiteSettings(p=>({...p,siteTitle:d.siteName||d.logoText||p.siteTitle,tagline:d.tagline||p.tagline,metaDescription:d.seoDescription||d.metaDescription||p.metaDescription,logoUrl:d.logoUrl||p.logoUrl,faviconUrl:d.faviconUrl||p.faviconUrl,email:d.email||p.email,phone:d.phone||p.phone,whatsapp:d.whatsapp||p.whatsapp,address:d.address||p.address,marqueeSpeedSeconds:d.marqueeSpeedSeconds||p.marqueeSpeedSeconds,socialLinks:Array.isArray(d.socialLinks)?d.socialLinks:p.socialLinks}));}
+      if(siteRes.data?.data){const d=siteRes.data.data;setSiteSettings(p=>({...p,siteTitle:d.siteName||d.logoText||p.siteTitle,tagline:d.tagline||p.tagline,metaDescription:d.seoDescription||d.metaDescription||p.metaDescription,logoUrl:d.logoUrl||p.logoUrl,faviconUrl:d.faviconUrl||p.faviconUrl,email:d.email||p.email,phone:d.phone||p.phone,whatsapp:d.whatsapp||p.whatsapp,address:d.address||p.address,marqueeSpeedSeconds:d.marqueeSpeedSeconds||p.marqueeSpeedSeconds,socialLinks:Array.isArray(d.socialLinks)?d.socialLinks:(p.socialLinks||INITIAL_SITE_SETTINGS.socialLinks)}));}
       if(heroRes.data?.data){const d=heroRes.data.data;setHeroSettings(p=>({...p,...d,headline:d.headline||p.headline,subheading:d.subheading||p.subheading,backgroundImageUrl:d.bgImage||d.backgroundImageUrl||p.backgroundImageUrl,duration:d.duration||p.duration}));}
       if(marqueeRes.data?.data){const d=marqueeRes.data.data;setSiteSettings(p=>({...p,marqueeSpeedSeconds:d.speedSeconds||p.marqueeSpeedSeconds}));}
       if(aboutRes.data?.data){const d=aboutRes.data.data;setFounder(p=>({...p,name:d.name||p.name,title:d.ceoTitle||d.title||p.title,brandRole:d.ceoName||d.brandRole||p.brandRole,bio:d.brandIntro||d.bio||p.bio,statement:d.headline||d.statement||p.statement,portraitUrl:d.ceoImage||d.portraitUrl||p.portraitUrl,email:d.email||p.email,phone:d.phone||p.phone,whatsapp:d.whatsapp||p.whatsapp,instagram:d.instagram||p.instagram,linkedin:d.linkedin||p.linkedin}));}
