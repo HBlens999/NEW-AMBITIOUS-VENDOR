@@ -1242,7 +1242,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                               const updated = perfumesForm.map(p =>
                                 p.id === perfume.id ? { ...p, priceNaira: val } : p
                               );
-                              handleSavePerfumes(updated);
+                              setPerfumesForm(updated);
                             }}
                             className="w-full px-3 py-1.5 rounded-lg border border-[var(--color-border)] bg-[var(--bg-main)] text-sm font-mono"
                           />
@@ -1261,7 +1261,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                               const updated = perfumesForm.map(p =>
                                 p.id === perfume.id ? { ...p, subtitle: e.target.value } : p
                               );
-                              handleSavePerfumes(updated);
+                              setPerfumesForm(updated);
                             }}
                             className="w-full px-2.5 py-1.5 rounded-lg border border-[var(--color-border)] bg-[var(--bg-main)] text-xs"
                           />
@@ -1278,7 +1278,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                               const updated = perfumesForm.map(p =>
                                 p.id === perfume.id ? { ...p, volume: e.target.value } : p
                               );
-                              handleSavePerfumes(updated);
+                              setPerfumesForm(updated);
                             }}
                             className="w-full px-2.5 py-1.5 rounded-lg border border-[var(--color-border)] bg-[var(--bg-main)] text-xs"
                           />
@@ -1299,7 +1299,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                                 ? { ...p, notes: { ...p.notes, top: e.target.value } }
                                 : p
                             );
-                            handleSavePerfumes(updated);
+                            setPerfumesForm(updated);
                           }}
                           className="w-full px-2.5 py-1 rounded border border-[var(--color-border)] bg-[var(--bg-main)] text-[11px]"
                         />
@@ -1313,7 +1313,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                                 ? { ...p, notes: { ...p.notes, heart: e.target.value } }
                                 : p
                             );
-                            handleSavePerfumes(updated);
+                            setPerfumesForm(updated);
                           }}
                           className="w-full px-2.5 py-1 rounded border border-[var(--color-border)] bg-[var(--bg-main)] text-[11px]"
                         />
@@ -1327,7 +1327,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                                 ? { ...p, notes: { ...p.notes, base: e.target.value } }
                                 : p
                             );
-                            handleSavePerfumes(updated);
+                            setPerfumesForm(updated);
                           }}
                           className="w-full px-2.5 py-1 rounded border border-[var(--color-border)] bg-[var(--bg-main)] text-[11px]"
                         />
@@ -1342,7 +1342,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                               const updated = perfumesForm.map(p =>
                                 p.id === perfume.id ? { ...p, inStock: e.target.checked } : p
                               );
-                              handleSavePerfumes(updated);
+                              setPerfumesForm(updated);
                             }}
                           />
                           <span>Available in Stock</span>
@@ -1351,7 +1351,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                         <button
                           onClick={() => {
                             const updated = perfumesForm.filter(p => p.id !== perfume.id);
-                            handleSavePerfumes(updated);
+                            setPerfumesForm(updated);
                           }}
                           className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
                           title="Delete Perfume"
